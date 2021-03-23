@@ -74,7 +74,7 @@ void loop() {
   IR_Rechts_val = analogRead(IR_Rechts);
   IR_Links_val = analogRead(IR_Links);
   delay(10);
-  // no line detected 
+  // rechtdoor rijden 
   if(IR_Rechts_val < sensBlack && IR_Links_val < sensBlack)
   {
     ledcWrite(SV_motor_L, 100);
@@ -89,7 +89,7 @@ void loop() {
     display.setCursor(0, 10);
     display.println("recht Door");
     display.display();
-    delay(10);
+    delay(20);
     ledcWrite(SV_motor_L, 0);
     ledcWrite(SA_motor_L, 0);
     ledcWrite(SV_motor_R, 0);
@@ -109,7 +109,7 @@ void loop() {
     display.println("turn links");
     display.display();
 
-    delay(10);
+    delay(20);
     ledcWrite(SV_motor_L, 0);
     ledcWrite(SA_motor_L, 0);
     ledcWrite(SV_motor_R, 0);
@@ -130,7 +130,7 @@ void loop() {
     display.println("turn rechts");
     display.display();
 
-    delay(10);
+    delay(20);
     ledcWrite(SV_motor_L, 0);
     ledcWrite(SA_motor_L, 0);
     ledcWrite(SV_motor_R, 0);
@@ -139,9 +139,9 @@ void loop() {
   }
   else if (IR_Rechts_val > sensBlack && IR_Links_val > sensBlack){
     ledcWrite(SV_motor_L, 0);
-    ledcWrite(SA_motor_L, 80);
+    ledcWrite(SA_motor_L, 100);
     ledcWrite(SV_motor_R, 0);
-    ledcWrite(SA_motor_R, 80);
+    ledcWrite(SA_motor_R, 100);
 
     display.clearDisplay();
     display.setTextSize(1);
