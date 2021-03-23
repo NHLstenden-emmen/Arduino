@@ -1,12 +1,14 @@
 #include <Wire.h> 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Adafruit_VL53L0X.h>
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 32 // OLED display height, in pixels
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 
 #define V_motor_L   16           // vooruit motor links
 #define A_motor_L   17           // Achteruit motor links
@@ -73,13 +75,28 @@ void setup() {
 void loop() {
   IR_Rechts_val = analogRead(IR_Rechts);
   IR_Links_val = analogRead(IR_Links);
+  VL53L0X_RangingMeasurementData_t measure;
   delay(10);
   // rechtdoor rijden 
   if(IR_Rechts_val < sensBlack && IR_Links_val < sensBlack){
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
-    display.setCursor(0, 10);
+    plankGas();
+  } // turn left
+  else if(IR_Rechts_val > sensBlack && IR_Links_val < sensBlack) {
+  turnLeft();
+  } // turn right
+  else if (IR_Rechts_val < sensBlack && IR_Links_val > sensBlack){
+  turnRight();
+  } // drive back and turn
+  else if (IR_Rechts_val > sensBlack && IR_Links_val > sensBlack){
+    driveBack();
+  } // look for when to stop
+  else if (measure.RangeMilliMeter < 200){
+  stopGame();
+  }
+}
+
+void plankGas(){
+    resetDisplay();
     display.println("recht Door");
     display.display();
 
@@ -89,52 +106,30 @@ void loop() {
     ledcWrite(SA_motor_R, 0);
 
     delay(20);
-    ledcWrite(SV_motor_L, 0);
-    ledcWrite(SA_motor_L, 0);
-    ledcWrite(SV_motor_R, 0);
-    ledcWrite(SA_motor_R, 0);
-    
-  } // turn left
-  else if(IR_Rechts_val > sensBlack && IR_Links_val < sensBlack) {
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
-    display.setCursor(0, 10);
+  stopDriving();
+  
+}
+void turnLeft(){
+    resetDisplay();
     display.println("turn links");
     display.display();
 
-    ledcWrite(SV_motor_L, 0);
-    ledcWrite(SA_motor_L, 140);
-    ledcWrite(SV_motor_R, 0);
-    ledcWrite(SA_motor_R, 140);
-    delay(200);
+    driveBackwards();
 
     ledcWrite(SV_motor_L, 0);
     ledcWrite(SA_motor_L, 120);
     ledcWrite(SV_motor_R, 120);
     ledcWrite(SA_motor_R, 0);
 
-
     delay(200);
-    ledcWrite(SV_motor_L, 0);
-    ledcWrite(SA_motor_L, 0);
-    ledcWrite(SV_motor_R, 0);
-    ledcWrite(SA_motor_R, 0);
-
-  } // turn right
-  else if (IR_Rechts_val < sensBlack && IR_Links_val > sensBlack){
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
-    display.setCursor(0, 10);
+  stopDriving();
+}
+void turnRight(){
+    resetDisplay();
     display.println("turn rechts");
     display.display();
 
-    ledcWrite(SV_motor_L, 0);
-    ledcWrite(SA_motor_L, 140);
-    ledcWrite(SV_motor_R, 0);
-    ledcWrite(SA_motor_R, 140);
-    delay(200);
+    driveBackwards();
 
     ledcWrite(SV_motor_L, 160);
     ledcWrite(SA_motor_L, 0);
@@ -143,25 +138,14 @@ void loop() {
 
 
     delay(200);
-    ledcWrite(SV_motor_L, 0);
-    ledcWrite(SA_motor_L, 0);
-    ledcWrite(SV_motor_R, 0);
-    ledcWrite(SA_motor_R, 0);
-    
-  }
-  else if (IR_Rechts_val > sensBlack && IR_Links_val > sensBlack){
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
-    display.setCursor(0, 10);
+  stopDriving();
+}
+void driveBack(){
+    resetDisplay();
     display.println("achteruit");
     display.display();
 
-    ledcWrite(SV_motor_L, 0);
-    ledcWrite(SA_motor_L, 140);
-    ledcWrite(SV_motor_R, 0);
-    ledcWrite(SA_motor_R, 140);
-    delay(200);
+    driveBackwards();
 
     ledcWrite(SV_motor_L, 0);
     ledcWrite(SA_motor_L, 200);
@@ -169,9 +153,32 @@ void loop() {
     ledcWrite(SA_motor_R, 0);
 
     delay(100);
+  stopDriving();
+}
+void stopGame(){
+    resetDisplay();
+    display.println("STOP");
+    display.display();
+
+  stopDriving();
+    delay(1000);
+}
+void driveBackwards(){
+  ledcWrite(SV_motor_L, 0);
+    ledcWrite(SA_motor_L, 140);
+    ledcWrite(SV_motor_R, 0);
+    ledcWrite(SA_motor_R, 140);
+    delay(200);
+}
+void stopDriving(){
     ledcWrite(SV_motor_L, 0);
     ledcWrite(SA_motor_L, 0);
     ledcWrite(SV_motor_R, 0);
     ledcWrite(SA_motor_R, 0);
-  }
+}
+void resetDisplay(){
+  display.clearDisplay();
+  display.setTextSize(1);             // Normal 1:1 pixel scale
+  display.setTextColor(WHITE);        // Draw white text
+  display.setCursor(0,10);             // Start at top-left corner
 }
