@@ -136,10 +136,10 @@ void loop() {
     ledcWrite(SA_motor_R, 140);
     delay(200);
 
-    ledcWrite(SV_motor_L, 120);
+    ledcWrite(SV_motor_L, 160);
     ledcWrite(SA_motor_L, 0);
     ledcWrite(SV_motor_R, 0);
-    ledcWrite(SA_motor_R, 120);
+    ledcWrite(SA_motor_R, 160);
 
 
     delay(200);
@@ -164,8 +164,8 @@ void loop() {
     delay(200);
 
     ledcWrite(SV_motor_L, 0);
-    ledcWrite(SA_motor_L, 120);
-    ledcWrite(SV_motor_R, 120);
+    ledcWrite(SA_motor_L, 200);
+    ledcWrite(SV_motor_R, 200);
     ledcWrite(SA_motor_R, 0);
 
     delay(100);
