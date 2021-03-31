@@ -81,79 +81,69 @@ void loop() {
   if(IR_Rechts_val < sensBlack && IR_Links_val < sensBlack){
     plankGas();
   } // turn left
-  else if(IR_Rechts_val > sensBlack && IR_Links_val < sensBlack) {
+  else if(IR_Rechts_val < sensBlack && IR_Links_val > sensBlack) {
   turnLeft();
   } // turn right
-  else if (IR_Rechts_val < sensBlack && IR_Links_val > sensBlack){
+  else if (IR_Rechts_val > sensBlack && IR_Links_val < sensBlack){
   turnRight();
-  } // drive back and turn
+  }
   else if (IR_Rechts_val > sensBlack && IR_Links_val > sensBlack){
     driveBack();
-  } // look for when to stop
-  else if (measure.RangeMilliMeter < 200){
+  }  else if (measure.RangeMilliMeter < 200){
   stopGame();
   }
 }
-
 void plankGas(){
+    ledcWrite(SV_motor_L, 100);
+    ledcWrite(SA_motor_L, 0);
+    ledcWrite(SV_motor_R, 100);
+    ledcWrite(SA_motor_R, 0);
+
     resetDisplay();
     display.println("recht Door");
     display.display();
-
-    ledcWrite(SV_motor_L, 140);
-    ledcWrite(SA_motor_L, 0);
-    ledcWrite(SV_motor_R, 140);
-    ledcWrite(SA_motor_R, 0);
-
     delay(20);
-  stopDriving();
-  
+    stopDriving();
 }
 void turnLeft(){
+    ledcWrite(SV_motor_L, 0);
+    ledcWrite(SA_motor_L, 100);
+    ledcWrite(SV_motor_R, 0);
+    ledcWrite(SA_motor_R, 0);
+
     resetDisplay();
     display.println("turn links");
     display.display();
 
-    driveBackwards();
-
-    ledcWrite(SV_motor_L, 0);
-    ledcWrite(SA_motor_L, 120);
-    ledcWrite(SV_motor_R, 120);
-    ledcWrite(SA_motor_R, 0);
-
-    delay(200);
-  stopDriving();
+    delay(20);
+    stopDriving();
+  
 }
 void turnRight(){
+    ledcWrite(SV_motor_L, 0);
+    ledcWrite(SA_motor_L, 0);
+    ledcWrite(SV_motor_R, 0);
+    ledcWrite(SA_motor_R, 100);
+
     resetDisplay();
     display.println("turn rechts");
     display.display();
 
-    driveBackwards();
-
-    ledcWrite(SV_motor_L, 160);
-    ledcWrite(SA_motor_L, 0);
-    ledcWrite(SV_motor_R, 0);
-    ledcWrite(SA_motor_R, 160);
-
-
-    delay(200);
-  stopDriving();
+    delay(20);
+    stopDriving();
 }
 void driveBack(){
+    ledcWrite(SV_motor_L, 0);
+    ledcWrite(SA_motor_L, 100);
+    ledcWrite(SV_motor_R, 0);
+    ledcWrite(SA_motor_R, 100);
+
     resetDisplay();
     display.println("achteruit");
     display.display();
 
-    driveBackwards();
-
-    ledcWrite(SV_motor_L, 0);
-    ledcWrite(SA_motor_L, 200);
-    ledcWrite(SV_motor_R, 200);
-    ledcWrite(SA_motor_R, 0);
-
     delay(100);
-  stopDriving();
+    stopDriving();
 }
 void stopGame(){
     resetDisplay();
@@ -162,13 +152,6 @@ void stopGame(){
 
   stopDriving();
     delay(1000);
-}
-void driveBackwards(){
-  ledcWrite(SV_motor_L, 0);
-    ledcWrite(SA_motor_L, 140);
-    ledcWrite(SV_motor_R, 0);
-    ledcWrite(SA_motor_R, 140);
-    delay(200);
 }
 void stopDriving(){
     ledcWrite(SV_motor_L, 0);
