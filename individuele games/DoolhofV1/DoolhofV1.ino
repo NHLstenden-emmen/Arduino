@@ -141,10 +141,10 @@ void turnRight(){
 
     driveBackwards();
 
-    ledcWrite(SV_motor_L, 90);
+    ledcWrite(SV_motor_L, 100);
     ledcWrite(SA_motor_L, 0);
     ledcWrite(SV_motor_R, 0);
-    ledcWrite(SA_motor_R, 90);
+    ledcWrite(SA_motor_R, 100);
     delay(50);
 }
 void driveBack(){
@@ -155,8 +155,8 @@ void driveBack(){
     driveBackwards();
 
     ledcWrite(SV_motor_L, 0);
-    ledcWrite(SA_motor_L, 100);
-    ledcWrite(SV_motor_R, 100);
+    ledcWrite(SA_motor_L, 120);
+    ledcWrite(SV_motor_R, 120);
     ledcWrite(SA_motor_R, 0);
 
     delay(100);
@@ -172,9 +172,9 @@ void stopGame(){
 }
 void driveBackwards(){
   ledcWrite(SV_motor_L, 0);
-    ledcWrite(SA_motor_L, 140);
+    ledcWrite(SA_motor_L, 170);
     ledcWrite(SV_motor_R, 0);
-    ledcWrite(SA_motor_R, 140);
+    ledcWrite(SA_motor_R, 170);
     delay(200);
 }
 void stopDriving(){
