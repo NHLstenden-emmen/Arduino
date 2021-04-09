@@ -377,7 +377,7 @@ void StartDoolhof()
 {
   if(DoolhofStart == true)
   {
-    IR_Rechts_val = analogRead(IR_Rechts);
+  IR_Rechts_val = analogRead(IR_Rechts);
 	IR_Links_val = analogRead(IR_Links);
 	VL53L0X_RangingMeasurementData_t measure;
 	lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
