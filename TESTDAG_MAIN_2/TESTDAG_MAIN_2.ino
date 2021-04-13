@@ -115,7 +115,7 @@ void setup()
   //Event handler
   webSocket.onEvent(webSocketEvent);
 
-  //Try ever 5000 again if connection has failed
+  //Probeer over 5000 ms opnieuw
   webSocket.setReconnectInterval(5000);
   
   //Initialize with the I2C addr 0x3C
@@ -149,6 +149,10 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
   {
     case WStype_DISCONNECTED:
       Serial.printf("[WSc] Disconnected!\n");
+      display.setTextSize(1);
+      display.setTextColor(WHITE);
+      display.setCursor(0,14);
+      display.println("Disconnected!");
       break;
     case WStype_CONNECTED:
       Serial.printf("[WSc] Connected to url: %s\n", payload);
@@ -265,7 +269,7 @@ void commandReceiver(uint8_t command)
   }
 }
 
-//---------------------Race Code---------------------            
+//---------------------Race Code---------------------    check geen problemen.        
 void StartRace()
 {
   //RaceStart = true;
@@ -363,7 +367,7 @@ void stopDrivingRace(){
 }
 
 
-//---------------------Tekening Code---------------------           check sterrenbeeld
+//---------------------Tekening Code---------------------           check maar disconect op het laatst
 
 void StartTekening()
 {
@@ -434,7 +438,7 @@ void StartTekening()
   }
 }
 
-//---------------------Doolhof Code---------------------       
+//---------------------Doolhof Code---------------------       check geen problemen
 
 void StartDoolhof()
 {

@@ -2,14 +2,15 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
+//adafruit modules
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_VL53L0X.h>
+//wifi modules
 #include <WiFi.h>
 #include <WebSocketsClient.h>
-#include <stdlib.h>
 
-// Hardware pin defines
+// Hardware Conecties
 #define V_motor_L   16           // vooruit motor links
 #define A_motor_L   17           // Achteruit motor links
 
@@ -18,14 +19,14 @@
 #define A_motor_R   5           // Achteruit motor Rechts
 
 
-#define IR_Rechts 34          // Linker IR sensBlackor 
-#define IR_Links  39          // Rechter IR sensBlackor
+#define IR_Rechts 34          // Linker IR sensBlack
+#define IR_Links  39          // Rechter IR sensBlack
 
 // IR trigger values
 int  IR_Rechts_val = 0;
 int  IR_Links_val = 0;
 
-// moter PWM setup
+// motor PWM setup
 const int freq = 1000;
 const int SV_motor_L = 0;
 const int SA_motor_L = 1;
@@ -34,14 +35,13 @@ const int SA_motor_R = 3;
 const int resolution = 8;
 int sensBlack = 200;
 
-// race conditions
+// race condities
 boolean RaceStart = false;
 boolean TekeningStart = false;
 boolean DoolhofStart = false;
 boolean SPSStart = false;
 
-
-//Wifi Connectie
+//Wifi Connectie info
 const char* BOT_NAME = "Dimitri";         
 char* ssid = "Dimitri";
 char* pass = "Dimitri1";
@@ -50,7 +50,7 @@ WebSocketsClient webSocket;
 //Afstand Sensor
 Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 
-//Oled Scherm
+//Oled Scherm defines
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 32 // OLED display height, in pixels
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
@@ -96,6 +96,13 @@ void setup()
   if(WiFi.status() != WL_CONNECTED) 
   {   
     Serial.println("No Wifi!");
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(0,14);
+    display.println("NO WIFI");
+    display.display();
+    delay(2000);
+    display.clearDisplay();
     return;
   }
 
@@ -105,7 +112,7 @@ void setup()
   //Event handler
   webSocket.onEvent(webSocketEvent);
 
-  //Try ever 5000 again if connection has failed
+  //Probeer over 5000 ms opnieuw
   webSocket.setReconnectInterval(5000);
   
   //Initialize with the I2C addr 0x3C
@@ -128,7 +135,7 @@ void setup()
     delay(1);
   }
   if (!lox.begin()) {
-    Serial.println(F("Failed to boot VL53L0X"));
+    Serial.println(F("Afstandsensor niet beschikbaar"));
     while(1);
   }
 }
@@ -139,6 +146,10 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
   {
     case WStype_DISCONNECTED:
       Serial.printf("[WSc] Disconnected!\n");
+      display.setTextSize(1);
+      display.setTextColor(WHITE);
+      display.setCursor(0,14);
+      display.println("Disconnected!");
       break;
     case WStype_CONNECTED:
       Serial.printf("[WSc] Connected to url: %s\n", payload);
@@ -146,12 +157,12 @@ void webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
       break;
     case WStype_TEXT:
       Serial.printf("[WSc] get text: %s\n", payload);
-      commandReceiver(((char*) payload));
+      commandReceiver(*payload);
       break;
   }
 }
 
-void loop()
+void loop()                    // loop met alle spellen 
 {
   webSocket.loop();
   StartRace();
@@ -160,27 +171,22 @@ void loop()
   StartSPS();
 }
 
-void commandReceiver(char* command)
+void commandReceiver(uint8_t command)      // haal server command op.
 {
-  long StartCommand = strtol(command, NULL, 16);
-  switch(StartCommand)
-  {
-    case 5://Standby/Stop
-      display.setTextSize(1);
-      display.setTextColor(WHITE);
-      display.setCursor(0,14);
-      display.println("Stop");
-      display.display();
-      display.clearDisplay();
-      RaceStart = false;
-      TekeningStart = false;
-      DoolhofStart = false;
-      SPSStart = false;
-      break;
-    
-  case 1://Race
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
+  switch(command)                          // de server server selecteerd welke case moet worden uitgevoerd.
+  { 
+  case 48://Stop
+    display.setCursor(0,14);
+    display.println("Stop");
+    display.display();
+    display.clearDisplay();
+    RaceStart = false;
+    TekeningStart = false;
+    DoolhofStart = false;
+    SPSStart = false;
+    break;
+       
+  case 49://Race
     display.setCursor(0,14);
     display.println("Race");
     display.display();
@@ -191,9 +197,7 @@ void commandReceiver(char* command)
     SPSStart = false;
     break;
 
-  case 2://Tekening
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
+  case 50://Tekening
     display.setCursor(0,14);
     display.println("Tekening");
     display.display();
@@ -204,9 +208,7 @@ void commandReceiver(char* command)
     SPSStart = false; 
     break;
     
-  case 3://Doolhof
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
+  case 51://Doolhof
     display.setCursor(0,14);
     display.println("Doolhof");
     display.display();
@@ -217,9 +219,8 @@ void commandReceiver(char* command)
     SPSStart = false;
     break;
 
-  case 4://Steen-Papier-Schaar (SPS)
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
+  case 52://Steen-Papier-Schaar 
+
     display.setCursor(0,14);
     display.println("Steen-Papier-Schaar");
     display.display();
@@ -230,65 +231,65 @@ void commandReceiver(char* command)
     SPSStart = true;
     break;
 
-  case 8://SPS Gewonnen
+  case 56://Gewonnen
+    display.clearDisplay();
     display.setCursor(0,14);
-    display.println("Steen-Papier-Schaar Gewonnen");
+    display.println("Winaar!");
     display.display();
     display.clearDisplay();
     break;
 
-   case 9://SPS Verloren
+   case 57://Verloren
+    display.clearDisplay();
     display.setCursor(0,14);
-    display.println("Steen-Papier-Schaar Verloren");
+    display.println("Loser");
     display.display();
     display.clearDisplay();
     break;
 
-  case 10://SPS Gelijkspel
+  case 104:// Gelijkspel
+    display.clearDisplay();
     display.setCursor(0,14);
-    display.println("Steen-Papier-Schaar Gelijkspel");
+    display.println("Tie");
     display.display();
     display.clearDisplay();
     break;
   }
 }
 
-//---------------------Race Code---------------------            
-
+//---------------------Race Code---------------------    check geen problemen.        
 void StartRace()
 {
+  //RaceStart = true;
   if(RaceStart == true)
   {
   IR_Rechts_val = analogRead(IR_Rechts);
   IR_Links_val = analogRead(IR_Links);
   VL53L0X_RangingMeasurementData_t measure;
-  delay(10);
+
   // rechtdoor rijden 
-  if(IR_Rechts_val < sensBlack && IR_Links_val < sensBlack){
+  if(IR_Rechts_val > sensBlack && IR_Links_val > sensBlack){
     plankGasRace();
   } // turn left
-  else if(IR_Rechts_val < sensBlack && IR_Links_val > sensBlack) {
-  turnLeftRace();
-  } // turn right
-  else if (IR_Rechts_val > sensBlack && IR_Links_val < sensBlack){
+  else if(IR_Rechts_val > sensBlack && IR_Links_val < sensBlack) {
   turnRightRace();
+  } // turn right
+  else if (IR_Rechts_val < sensBlack && IR_Links_val > sensBlack){
+  turnLeftRace();
   }
-  else if (IR_Rechts_val > sensBlack && IR_Links_val > sensBlack){
+  else if (IR_Rechts_val < sensBlack && IR_Links_val < sensBlack){
     driveBackRace();
   }  else if (measure.RangeMilliMeter < 200){
   stopGameRace();
-  }
+  } 
   } 
 }
 void plankGasRace(){
-    ledcWrite(SV_motor_L, 100);
+    ledcWrite(SV_motor_L, 220);  //220
     ledcWrite(SA_motor_L, 0);
-    ledcWrite(SV_motor_R, 100);
+    ledcWrite(SV_motor_R, 220);
     ledcWrite(SA_motor_R, 0);
-
-    resetDisplay();
-    display.println("recht Door");
-    display.display();
+    
     delay(20);
     stopDrivingRace();
 }
@@ -297,24 +298,15 @@ void turnLeftRace(){
     ledcWrite(SA_motor_L, 100);
     ledcWrite(SV_motor_R, 0);
     ledcWrite(SA_motor_R, 0);
-
-    resetDisplay();
-    display.println("turn links");
-    display.display();
-
+    
     delay(20);
     stopDrivingRace();
-  
 }
 void turnRightRace(){
     ledcWrite(SV_motor_L, 0);
     ledcWrite(SA_motor_L, 0);
     ledcWrite(SV_motor_R, 0);
     ledcWrite(SA_motor_R, 100);
-
-    resetDisplay();
-    display.println("turn rechts");
-    display.display();
 
     delay(20);
     stopDrivingRace();
@@ -325,16 +317,12 @@ void driveBackRace(){
     ledcWrite(SV_motor_R, 0);
     ledcWrite(SA_motor_R, 100);
 
-    resetDisplay();
-    display.println("achteruit");
-    display.display();
-
     delay(100);
     stopDrivingRace();
 }
 void stopGameRace(){
-    resetDisplay();
-    display.println("STOP");
+    display.clearDisplay();
+    display.println("Finish!");
     display.display();
 
     webSocket.sendTXT("11");
@@ -351,10 +339,11 @@ void stopDrivingRace(){
 }
 
 
-//---------------------Tekening Code---------------------           check
+//---------------------Tekening Code---------------------           check maar disconect op het laatst
 
 void StartTekening()
 {
+  //TekeningStart = true;
   if(TekeningStart == true)
   {
   // code van de tekening
@@ -367,7 +356,7 @@ void StartTekening()
   delay(3000);
   
   ledcWrite(SV_motor_L, 0);
-  ledcWrite(SA_motor_L, 150);
+  ledcWrite(SA_motor_L, 110);
   
   ledcWrite(SV_motor_R, 0);
   ledcWrite(SA_motor_R, 0);
@@ -382,19 +371,19 @@ void StartTekening()
 
   delay(500);
 
-  ledcWrite(SV_motor_L, 150);
+  ledcWrite(SV_motor_L, 110);
   ledcWrite(SA_motor_L, 0);
   
   ledcWrite(SV_motor_R, 0);
-  ledcWrite(SA_motor_R, 150);
+  ledcWrite(SA_motor_R, 110);
   
   delay(300);
 
   ledcWrite(SV_motor_L, 0);
-  ledcWrite(SA_motor_L, 150);
+  ledcWrite(SA_motor_L, 110);
   
   ledcWrite(SV_motor_R, 0);
-  ledcWrite(SA_motor_R, 150);
+  ledcWrite(SA_motor_R, 110);
 
   delay(300);
 
@@ -402,12 +391,12 @@ void StartTekening()
   ledcWrite(SA_motor_L, 0);
   
   ledcWrite(SV_motor_R, 0);
-  ledcWrite(SA_motor_R, 150);
+  ledcWrite(SA_motor_R, 110);
 
   delay(1200);
 
   ledcWrite(SV_motor_L, 0);
-  ledcWrite(SA_motor_L, 150);
+  ledcWrite(SA_motor_L, 110);
   
   ledcWrite(SV_motor_R, 0);
   ledcWrite(SA_motor_R, 0);
@@ -421,33 +410,38 @@ void StartTekening()
   }
 }
 
-
-//---------------------Doolhof Code---------------------       check
+//---------------------Doolhof Code---------------------       check geen problemen
 
 void StartDoolhof()
 {
-  DoolhofStart = true;
+  //DoolhofStart = true;
   if(DoolhofStart == true)
   {
   IR_Rechts_val = analogRead(IR_Rechts);
   IR_Links_val = analogRead(IR_Links);
-  VL53L0X_RangingMeasurementData_t measure;
-  lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
+  //VL53L0X_RangingMeasurementData_t measure;
+  //lox.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
   delay(10);
   // rechtdoor rijden 
-   if(IR_Rechts_val < sensBlack && IR_Links_val < sensBlack){
+   if(IR_Rechts_val < sensBlack && IR_Links_val < sensBlack)
+   {
     plankGasDoolhof();
   } // turn left
-  else if(IR_Rechts_val > sensBlack && IR_Links_val < sensBlack) {
+  else if(IR_Rechts_val > sensBlack && IR_Links_val < sensBlack) 
+  {
   turnLeftDoolhof();
   } // turn right
-  else if (IR_Rechts_val < sensBlack && IR_Links_val > sensBlack){
+  else if (IR_Rechts_val < sensBlack && IR_Links_val > sensBlack)
+  {
   turnRightDoolhof();
   }// drive back and turn
-  else if (IR_Rechts_val > sensBlack && IR_Links_val > sensBlack){
+  else if (IR_Rechts_val > sensBlack && IR_Links_val > sensBlack)
+  {
     driveBackwardsDoolhof();
   } 
-  else if (measure.RangeMilliMeter < 150){
+/*
+  else if (measure.RangeMilliMeter < 150)
+  {
       Serial.print("Distance (mm): "); Serial.println(measure.RangeMilliMeter);
       stopDrivingDoolhof();
       display.display();
@@ -455,30 +449,23 @@ void StartDoolhof()
       display.println("Einde Doolhof");
       webSocket.sendTXT("13");
       DoolhofStart = false;
-  }
+   }
+*/   
   } 
 }
 ///////////////////////////////////////////////////////functies
-void plankGasDoolhof(){
-    resetDisplay();
-    display.println("recht Door");
-    display.display();
-
-    ledcWrite(SV_motor_L, 200);
+void plankGasDoolhof()
+{
+    ledcWrite(SV_motor_L, 215);
     ledcWrite(SA_motor_L, 0);
     ledcWrite(SV_motor_R, 200);
     ledcWrite(SA_motor_R, 0);
 
     delay(20);
     stopDrivingDoolhof();
-  
 }
 void turnLeftDoolhof()
 {
-    resetDisplay();
-    display.println("turn links");
-    display.display();
-
     driveBackwardsDoolhof();
 
     ledcWrite(SV_motor_L, 0);
@@ -489,10 +476,6 @@ void turnLeftDoolhof()
 }
 void turnRightDoolhof()
 {
-    resetDisplay();
-    display.println("turn rechts");
-    display.display();
-
     driveBackwardsDoolhof();
 
     ledcWrite(SV_motor_L, 90);
@@ -503,7 +486,7 @@ void turnRightDoolhof()
 }
  void driveBackwardsDoolhof()
  {
-   ledcWrite(SV_motor_L, 0);
+    ledcWrite(SV_motor_L, 0);
     ledcWrite(SA_motor_L, 140);
     ledcWrite(SV_motor_R, 0);
     ledcWrite(SA_motor_R, 140);
@@ -524,52 +507,38 @@ void StartSPS()
   if(SPSStart == true)
   {
     int number = random(1,4);
+     
+    if (number == 1)
+    {
+      delay(2000);
+      display.clearDisplay();
+      display.setCursor(0, 10);
+      display.println("Ik kies papier.");
+      display.display(); 
+      webSocket.sendTXT("6");
+      SPSStart = false;
+    }
 
-  Serial.println("-----------");
-  Serial.println(number);
-  if (number == 1){
-  delay(2000);
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setCursor(0, 10);
-  // Display static text
-  display.println("Ik kies papier.");
-  display.display(); 
-  }
+    if (number == 2)
+    {
+     delay(2000);
+     display.clearDisplay();
+     display.setCursor(0, 10);
+     display.println("Ik kies steen.");
+     display.display(); 
+     webSocket.sendTXT("5");
+     SPSStart = false;
+    }
 
-  if (number == 2){
-  delay(2000);
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setCursor(0, 10);
-  // Display static text
-  display.println("Ik kies steen.");
-  display.display(); 
-  
-  }
-
-  if (number == 3){
-  delay(2000);
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setCursor(0, 10);
-  // Display static text
-  display.println("Ik kies schaar.");
-  display.display(); 
-  }
+    if (number == 3)
+    {
+      delay(2000);
+      display.clearDisplay();
+      display.setCursor(0, 10);
+      display.println("Ik kies schaar.");
+      display.display(); 
       webSocket.sendTXT("7");
       SPSStart = false;
-    } 
-  }
-
-
-// reset display
-void resetDisplay(){
-  display.clearDisplay();
-  display.setTextSize(1);             // Normal 1:1 pixel scale
-  display.setTextColor(WHITE);        // Draw white text
-  display.setCursor(0,10);             // Start at top-left corner
+    }
+  } 
 }
