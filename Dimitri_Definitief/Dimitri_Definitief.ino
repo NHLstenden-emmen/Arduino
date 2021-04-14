@@ -1,4 +1,4 @@
-///////////////Library's///////////////////////
+///////////////algemene modules///////////////////////
 #include <Wire.h>
 #include <SPI.h>
 #include <Arduino.h>
@@ -281,7 +281,7 @@ void StartRace()
 /////////////////////////////////////////functies_Race//////////////////////////////////////////
 void plankGasRace()
 {
-    ledcWrite(SV_motor_L, 220);  //220
+    ledcWrite(SV_motor_L, 220);  //220 (max goedgaande geteste snelheid)
     ledcWrite(SA_motor_L, 0);
     ledcWrite(SV_motor_R, 220);
     ledcWrite(SA_motor_R, 0);
@@ -299,7 +299,7 @@ void turnLeftRace()
     delay(20);
     stopDrivingRace();
 }
-void turnRightRace()
+void turnRightRace()            // laat robot naar rechts sturen.
 {
     ledcWrite(SV_motor_L, 0);
     ledcWrite(SA_motor_L, 0);
@@ -309,7 +309,7 @@ void turnRightRace()
     delay(20);
     stopDrivingRace();
 }
-void driveBackRace()
+void driveBackRace()             //laat robot achteruit rijden.
 {
     ledcWrite(SV_motor_L, 0);
     ledcWrite(SA_motor_L, 100);
@@ -319,7 +319,7 @@ void driveBackRace()
     delay(100);
     stopDrivingRace();
 }
-void stopDrivingRace()
+void stopDrivingRace()          // brengt robot tot stilstand.
 {
     ledcWrite(SV_motor_L, 0);
     ledcWrite(SA_motor_L, 0);
@@ -394,8 +394,8 @@ void StartTekening()
   display.display();
   display.clearDisplay();
   display.println("Einde Tekening");
-  webSocket.sendTXT("12");
-  TekeningStart = false;
+  webSocket.sendTXT("12");             // laat server weten dat robot klaar is met de tekening.
+  TekeningStart = false;               // stopt het spel.
   }
 }
 
@@ -412,7 +412,7 @@ void StartDoolhof()
     lox.rangingTest(&measure, false);
     delay(10);
 
-    if (measure.RangeMilliMeter < 150)
+    if (measure.RangeMilliMeter < 150)          // check of er geen obstakel in de weg zit.
     {
       stopDrivingDoolhof();
       display.clearDisplay();
@@ -423,17 +423,17 @@ void StartDoolhof()
     else if(IR_Rechts_val < sensBlack && IR_Links_val < sensBlack)
     {//plankgas vooruit
       plankGasDoolhof();
-    } // Naar links
+    } 
     else if(IR_Rechts_val > sensBlack && IR_Links_val < sensBlack) 
-    {
+    {// Naar links
     turnLeftDoolhof();
-    } // Naar rechts
+    } 
     else if (IR_Rechts_val < sensBlack && IR_Links_val > sensBlack)
-    {
+    {// Naar rechts
     turnRightDoolhof();
-    }// Achteruit en draaien
+    }
     else if (IR_Rechts_val > sensBlack && IR_Links_val > sensBlack)
-    {
+    {// Achteruit en draaien
     driveBackwardsDoolhof();
     }
   } 
@@ -491,7 +491,7 @@ void StartSPS()
 {
   if(SPSStart == true)
   {
-    int number = random(1,4);
+    int number = random(1,4);          // genereedt een radom waarde om keuze voor SPS te maken.
      
     if (number == 1)
     {
