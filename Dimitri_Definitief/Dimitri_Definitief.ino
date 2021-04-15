@@ -45,8 +45,8 @@ boolean SPSStart = false;
 
 /////////Wifi Connectie info//////////
 const char* BOT_NAME = "Dimitri";         
-char* ssid = "Dimitri";
-char* pass = "Dimitri1";
+char* ssid = "BattleBotsRouter";
+char* pass = "NetwerkBoys";
 WebSocketsClient webSocket;
 
 //////////Afstand Sensor//////////
@@ -281,9 +281,9 @@ void StartRace()
 /////////////////////////////////////////functies_Race//////////////////////////////////////////
 void plankGasRace()
 {
-    ledcWrite(SV_motor_L, 220);  //220 (max goedgaande geteste snelheid)
+    ledcWrite(SV_motor_L, 200);  //220 (max goedgaande geteste snelheid)
     ledcWrite(SA_motor_L, 0);
-    ledcWrite(SV_motor_R, 220);
+    ledcWrite(SV_motor_R, 200);
     ledcWrite(SA_motor_R, 0);
     
     delay(20);
